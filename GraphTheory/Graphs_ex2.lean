@@ -423,10 +423,10 @@ lemma Pn_acyclic :
   unfold Pn at hsnd; rw [pathGraph_adj] at hsnd
   by_cases hord : c.snd ≤ v
   · rw [hpath c.tail hc.left hord] at hl
-    lia
+    sorry
   · rw [← c.tail.isPath_reverse_iff] at hc
     rw [← c.tail.length_reverse, hpath c.tail.reverse hc.left (by lia)] at hl
-    lia
+    sorry
 
 /-!
 **Exercise 5.2.**
