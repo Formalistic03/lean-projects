@@ -1,3 +1,5 @@
+-- Copyright (c) 2025 Robert Šámal
+-- released under MIT license as described in the file LICENSE
 -- Jakub : worked-out exercise sheet from Robert Šámal's course
 -- https://github.com/robert-samal/lean-class/blob/acdbef196bd87ab73f226a8a9127df515252dd45/Class_materials/Class09/Graphs101.lean
 -- (now deleted; many changes to adhere to recent mathlib)
@@ -22,10 +24,8 @@ You’ll likely want to compile this with a recent mathlib. If some names
 move, update the imports and hints (search with `#find`, Loogle, etc.).
 -/
 
-import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Combinatorics.SimpleGraph.Hasse
-import Mathlib.Combinatorics.SimpleGraph.DegreeSum
 
 open SimpleGraph
 
@@ -356,78 +356,39 @@ start without repeating a vertex).
 
 lemma Pn_acyclic :
     (Pn (n + 1)).IsAcyclic := by
-  have hsupp {u v w : Fin (n + 1)} (p : (Pn (n + 1)).Walk u v) (huw : u < w) (hw : w ∉ p.support) :
-      ∀ x ∈ p.support, x < w := by
-    induction hl : p.length generalizing u with
-    | zero =>
-      intro x hx
-      rw [Walk.length_eq_zero_iff, Walk.nil_iff_support_eq] at hl
-      rw [hl, List.mem_singleton] at hx
-      rw [hx]
-      exact huw
-    | succ k ih =>
-      cases p with
-      | nil => cases hl
-      | cons hy q =>
-        intro x hx; rename_i y
-        rw [Walk.length_cons, Nat.succ_inj] at hl
-        rw [Walk.support_cons, List.mem_cons] at hw hx
-        push Not at hw
-        rw [Pn, pathGraph_adj] at hy
-        cases hx with
-        | inl hx => rw [hx]; exact huw
-        | inr hx =>
-          have hyw : y < w := by
-            cases hy with
-            | inl hy =>
-              rw [lt_iff_le_and_ne]
-              use (by lia)
-              intro hyw; apply hw.right
-              rw [← hyw]
-              exact q.start_mem_support
-            | inr hy => lia
-          exact ih q hyw hw.right hl x hx
-  have hpath {u v : Fin (n + 1)} (p : (Pn (n + 1)).Walk u v) (hp : p.IsPath) (huv : u ≤ v) :
-      p.length = v.val - u.val := by
-    induction hl : p.length generalizing u with
-    | zero =>
-      suffices v = u by lia
-      symm; exact p.eq_of_length_eq_zero hl
-    | succ k ih =>
-      cases p with
-      | nil => cases hl
-      | cons hw q =>
-        rename_i w
-        rw [Walk.length_cons, Nat.succ_inj] at hl
-        rw [Walk.cons_isPath_iff] at hp
-        rw [Pn, pathGraph_adj] at hw
-        have hne : u ≠ v := by
-          intro heq; apply hp.right
-          rw [heq]
-          exact q.end_mem_support
-        cases hw with
-        | inl hw =>
-          rw [ih q hp.left (by lia) hl]
-          lia
-        | inr hw =>
-          have hvu := hsupp q (by lia) hp.right v q.end_mem_support
-          lia
+  have hsupp {u v w : Fin (n + 1)} (p : (pathGraph (n + 1)).Walk u v)
+      (huw : u < w) (hw : w ∉ p.support) :
+      v < w := by
+    by_contra hvw
+    obtain ⟨d, hdp, _⟩ := p.exists_boundary_dart {x | x < w} huw hvw
+    have hadj := d.adj
+    grind [pathGraph_adj, p.dart_snd_mem_support_of_mem_darts hdp]
+  have hpath {u v : Fin (n + 1)} (p : (pathGraph (n + 1)).Walk u v)
+      (hp : p.IsPath) :
+      p.length = |(v.val : ℤ) - u.val| := by
+    wlog huv : u ≤ v with hpath
+    · grind [p.isPath_reverse_iff, p.length_reverse]
+    induction p with
+    | nil => simp
+    | cons hw q ih =>
+      rename_i u w v
+      rw [Walk.cons_isPath_iff] at hp
+      rw [Walk.length_cons]
+      rw [pathGraph_adj] at hw
+      cases hw with
+      | inl _ =>
+        have hne : u ≠ v := by grind [q.end_mem_support]
+        grind [ih _ _]
+      | inr _ => grind [hsupp _]
   intro v c hc
   have hn : ¬ c.Nil := by
     intro hn; cases hn
     exact hc.ne_nil rfl
   rw [Walk.isCycle_iff_isPath_tail_and_le_length] at hc
-  have hl := hc.right
-  rw [← c.length_tail_add_one hn] at hl
   have hsnd := c.adj_snd hn
   unfold Pn at *
   rw [pathGraph_adj] at hsnd
-  by_cases hord : c.snd ≤ v
-  · rw [hpath c.tail hc.left hord] at hl
-    lia
-  · rw [← c.tail.isPath_reverse_iff] at hc
-    rw [← c.tail.length_reverse, hpath c.tail.reverse hc.left (by lia)] at hl
-    lia
+  grind [c.length_tail_add_one hn, hpath _]
 
 /-!
 **Exercise 5.2.**

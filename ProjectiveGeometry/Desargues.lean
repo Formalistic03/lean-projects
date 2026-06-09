@@ -1,4 +1,6 @@
 /-
+Copyright (c) 2026 Jakub Štepo
+Released under MIT license as described in the file LICENSE.
 Authors: Jakub Štepo
 -/
 import Mathlib.Combinatorics.Configuration
