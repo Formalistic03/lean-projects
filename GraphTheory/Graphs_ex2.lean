@@ -52,6 +52,7 @@ def G3 : SimpleGraph V3 where
     | c, b => True
     | _, _ => False
   symm := by
+    constructor
     intro v w
     cases v <;> cases w <;> decide
   loopless := by
