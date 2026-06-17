@@ -1,9 +1,13 @@
+/-
+Copyright (c) 2026 Jakub Štepo. All rights reserved.
+Released under MIT license as described in the file LICENSE.
+Authors: Jakub Štepo
+-/
 import Mathlib.Combinatorics.Quiver.Basic
 import Mathlib.Combinatorics.Graph.Basic
 import Mathlib.Combinatorics.Digraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Combinatorics.SimpleGraph.Hasse
-import Mathlib.Combinatorics.SimpleGraph.Sum
 /-
 # A first look at how graph theory is done in Lean
 
@@ -360,7 +364,8 @@ lemma pathGraph_acyclic'' (n : ℕ) :
 
 #check Walk.IsCycle
 -- attempt #4, based on vertex removal and induction
--- we prove that cycles induce cycles separately
+-- we prove that cycles induce cycles separately,
+-- because the basic theory regarding iducing walks is missing
 lemma length_induce {V : Type u} {G : SimpleGraph V} (s : Set V) {u v : V} (w : G.Walk u v)
     (hw : ∀ x ∈ w.support, x ∈ s) : (w.induce s hw).length = w.length := by
   induction w with
