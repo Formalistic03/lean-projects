@@ -13,8 +13,7 @@ import Mathlib.Combinatorics.SimpleGraph.Sum
 
 section DeleteDartFrom
 
-namespace SimpleGraph
-namespace Walk
+namespace SimpleGraph.Walk
 
 variable {V : Type*} {G : SimpleGraph V} {u v x y : V}
 
@@ -150,8 +149,7 @@ theorem cons_deleteDartFrom_isCycle_eq_rotate (c : G.Walk v v) (hd : d ∈ c.dar
   apply append_cancel_left at heq
   rw [← heq, cons_append]
 
-end Walk
-end SimpleGraph
+end SimpleGraph.Walk
 
 end DeleteDartFrom
 
@@ -300,8 +298,26 @@ lemma isCycle_induce {c : G.Walk v v} (hc : ∀ x ∈ c.support, x ∈ s) :
 
 end Walk
 
-theorem isAcyclic_iff_isAcyclic_induce_of_leaf (hv : (G.neighborSet v).Subsingleton) :
-    G.IsAcyclic ↔ (G.induce {v}ᶜ).IsAcyclic := by
+theorem connnected_induce_of_compl_singleton_of_degree_eq_one_iff {v : V}
+    [Fintype (G.neighborSet v)] (hv : G.degree v = 1) :
+    G.Connected ↔ (G.induce {v}ᶜ).Connected := by
+  use fun h ↦ h.induce_compl_singleton_of_degree_eq_one hv
+  have hn := Nonempty.intro v
+  refine fun h ↦ ⟨fun x y ↦ ?_⟩
+  wlog hyv : y ≠ v with hwlog
+  · by_cases hxv : x ≠ v
+    · rw [not_not.mp hyv]; symm; exact hwlog hv hn h v x hxv
+    · rw [not_not.mp hyv, not_not.mp hxv]
+  by_cases hxv : x ≠ v
+  · exact (h.preconnected ⟨x, hxv⟩ ⟨y, hyv⟩).map (Embedding.induce {v}ᶜ).toHom
+  · rw [not_not.mp hxv]
+    rw [degree_eq_one_iff_existsUnique_adj] at hv
+    have ⟨u, hu, _⟩ := hv
+    apply hu.reachable.trans
+    exact (h.preconnected ⟨u, G.ne_of_adj hu.symm⟩ ⟨y, hyv⟩).map (Embedding.induce {v}ᶜ).toHom
+
+theorem isAcyclic_induce_of_compl_singleton_of_subsingleton_neighborSet {v : V}
+    (hv : (G.neighborSet v).Subsingleton) : G.IsAcyclic ↔ (G.induce {v}ᶜ).IsAcyclic := by
   use (IsAcyclic.induce · {v}ᶜ)
   intro h u c hc
   by_cases hcv : v ∈ c.support
@@ -310,34 +326,18 @@ theorem isAcyclic_iff_isAcyclic_induce_of_leaf (hv : (G.neighborSet v).Subsingle
       rw [← c.isCycle_rotate hcv] at hc
     apply hc.snd_ne_penultimate
     exact hv (c'.adj_snd hc.not_nil) (c'.adj_penultimate hc.not_nil).symm
-  · apply h (c.induce {v}ᶜ (by grind))
+  · apply h (c.induce {v}ᶜ (fun _ hx hcx ↦ hcv (hcx ▸ hx)))
     rwa [c.isCycle_induce]
 
-theorem connnected_iff_connected_induce_of_leaf [Fintype (G.neighborSet v)] (hv : G.degree v = 1) :
-    G.Connected ↔ (G.induce {v}ᶜ).Connected := by
-  use fun h ↦ h.induce_compl_singleton_of_degree_eq_one hv
-  have hn := Nonempty.intro v
-  refine fun h ↦ ⟨fun x y ↦ ?_⟩
-  wlog _ : y ≠ v with hwlog
-  · by_cases hxv : x ≠ v
-    · convert (hwlog hv hn h v x hxv).symm; simp_all
-    · simp_all
-  by_cases hxv : x ≠ v
-  · exact (h.preconnected ⟨x, by grind⟩ ⟨y, by grind⟩).map (Embedding.induce {v}ᶜ).toHom
-  · rw [show x = v from not_not.mp hxv]
-    rw [degree_eq_one_iff_existsUnique_adj] at hv
-    have ⟨u, hu, _⟩ := hv
-    apply hu.reachable.trans
-    exact (h.preconnected ⟨u, G.ne_of_adj hu.symm⟩ ⟨y, by grind⟩).map (Embedding.induce {v}ᶜ).toHom
-
-theorem isTree_iff_isTree_induce_of_leaf [Fintype (G.neighborSet v)] (hv : G.degree v = 1) :
-    G.IsTree ↔ (G.induce {v}ᶜ).IsTree := by
+theorem isTree_induce_of_compl_subsingleton_of_degree_eq_one_iff {v : V}
+    [Fintype (G.neighborSet v)] (hv : G.degree v = 1) : G.IsTree ↔ (G.induce {v}ᶜ).IsTree := by
   have hv' : (G.neighborSet v).Subsingleton := by
     intro _ h _ h'
-    rw [← Set.mem_toFinset] at h h'
-    grind [degree, Finset.card_eq_one, neighborFinset]
+    have ⟨_, _, hun⟩ := degree_eq_one_iff_existsUnique_adj.mp hv
+    rw [hun _ h, hun _ h']
   iterate 2 rw [isTree_iff]
-  rw [isAcyclic_iff_isAcyclic_induce_of_leaf hv', connnected_iff_connected_induce_of_leaf hv]
+  rw [isAcyclic_induce_of_compl_singleton_of_subsingleton_neighborSet hv',
+      connnected_induce_of_compl_singleton_of_degree_eq_one_iff hv]
 
 end SimpleGraph
 

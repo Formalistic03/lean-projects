@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2026 Jakub Štepo
+Copyright (c) 2026 Jakub Štepo. All rights reserved.
 Released under MIT license as described in the file LICENSE.
 Authors: Jakub Štepo
 -/
