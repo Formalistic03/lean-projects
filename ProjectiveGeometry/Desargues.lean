@@ -14,7 +14,7 @@ and then the fact that projective geometries of dimension at least three are Des
 ## Main definitions
 
 * `ProjectiveGeometry`: A special kind of configuration where there is a (unique) line
-  through each pair of distrinct points and where coplanar lines intersect.
+  through each pair of distinct points and where coplanar lines intersect.
 * `Collinear`: The ternary collinearity relation (all the points lie on a single line).
 * `Triangle` : The proposition that three points are not collinear.
 * `Coplanar`: The quaternary coplanarity relation (all the points lie in a single plane).

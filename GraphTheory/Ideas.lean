@@ -267,6 +267,7 @@ lemma darts_induce {u v} : ∀ (w : G.Walk u v) (hw : ∀ x ∈ w.support, x ∈
   | nil, _ => rfl
   | cons .., _ => by simp [darts_induce]
 
+#check Equiv.Perm
 lemma edges_induce {u v} : ∀ (w : G.Walk u v) (hw : ∀ x ∈ w.support, x ∈ s),
     (w.induce s hw).edges = w.edges.attach.map
       fun ⟨e, he⟩ ↦ Sym2.attachWith e fun x hx ↦ hw x (mem_support_of_mem_edges he hx)

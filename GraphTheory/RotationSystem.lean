@@ -370,7 +370,8 @@ section Connectivity
 /-- A subgraph version of Combinatorics.SimpleGraph.Walk.
 
   Like a walk in the underlying graph, but we require that the first vertex be a vertex of the
-  subgraph and that the adjacencies be adjacencies of the subgraph. -/
+  subgraph (to exclude nil walks on different vertices) and that the adjacencies be adjacencies of
+  the subgraph. -/
 inductive Walk (H : G.Subgraph) : V → V → Type u
   | nil {u : V} (hu : u ∈ H.verts) : H.Walk u u
   | cons {u v w : V} (h : H.Adj u v) (p : H.Walk v w) : H.Walk u w
