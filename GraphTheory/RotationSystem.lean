@@ -597,9 +597,10 @@ def RotationSystem.ofCoe {H : G.Subgraph} [DecidableRel H.Adj]
 
 lemma RotationSystem.coe_ofCoe {H : G.Subgraph} [DecidableRel H.Adj]
     (R : H.coe.RotationSystem) : (RotationSystem.ofCoe R).coe = R := by
-  unfold coe ofCoe
   refine RotationSystem.ext (Equiv.Perm.ext fun d ↦ ?_)
-  simp
+  rw [coe, Equiv.permCongr_apply, Equiv.symm_symm]
+  rw [(ofCoe R).rotation.subtypePerm_apply (ofCoe R).invariantSet_dartSet (H.coeDartEquiv d)]
+  simp [ofCoe]
 
 /-- For a subgraph, planarity is equivalent to the planarity of its coercion to a graph. -/
 theorem coe_isPlanar (H : G.Subgraph) [Fintype H.verts] [DecidableEq V] [DecidableRel H.Adj] :
@@ -661,7 +662,9 @@ lemma coe_faceRotation (R : H.RotationSystem) :
       (R.faceRotation.subtypePerm R.faceRotation_invariantSet_dartSet) := by
   unfold faceRotation dartSetSymmPerm
   refine Equiv.Perm.ext fun d ↦ ?_
-  rw [Equiv.permCongr_apply, Equiv.symm_symm, Equiv.Perm.subtypePerm_apply]
+  rw [Equiv.permCongr_apply, Equiv.symm_symm]
+  rw [(R.rotation⁻¹ * H.coe.dartSymmPerm.extendDomain H.coeDartEquiv).subtypePerm_apply
+    R.faceRotation_invariantSet_dartSet (H.coeDartEquiv d)]
   conv_rhs =>
     enter [2, 1]
     rw [Equiv.Perm.coe_mul, Function.comp_apply, Equiv.Perm.extendDomain_apply_image]
